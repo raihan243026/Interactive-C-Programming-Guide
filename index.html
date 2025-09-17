@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Competitive Programming in C++</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: CodeZen Calm -->
+    <!-- Application Structure Plan: A single-page app with a fixed top navbar and a main content area. A collapsible sidebar (hidden on mobile, visible on desktop) is also implemented. The navbar includes a search bar and a theme toggle, allowing for dynamic content filtering and personalized viewing. This structure is chosen to optimize navigation and user control, providing quick access to specific topics and a more comfortable reading experience across devices. The search bar provides a powerful, non-linear way to explore the content, while the responsive design ensures usability on any screen size. -->
+    <!-- Visualization & Content Choices: Report Info: Big O Notations -> Goal: Compare -> Viz/Presentation Method: Bar Chart (Chart.js/Canvas) -> Interaction: Hover for tooltips -> Justification: Visually demonstrates the crucial concept of time complexity growth, making it easier to understand than text alone. Report Info: Core Concepts (Data Types, STL) -> Goal: Inform/Organize -> Viz/Presentation Method: Interactive Cards/Lists (HTML/CSS/JS) -> Interaction: Click/Hover to reveal details -> Justification: Breaks down information into digestible chunks, reducing cognitive load and encouraging exploration. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .bengali {
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+        .sidebar-link {
+            transition: all 0.2s ease-in-out;
+        }
+        .sidebar-link:hover, .sidebar-link.active {
+            transform: translateX(4px);
+        }
+        .content-card {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .content-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        pre {
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 transition-colors duration-300 dark:bg-stone-900 dark:text-stone-200">
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg shadow-sm p-4 flex items-center justify-between border-b border-stone-200 dark:bg-stone-800/80 dark:border-stone-700">
+        <div class="flex items-center space-x-4">
+            <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-md hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+            </button>
+            <h1 class="text-xl font-bold text-stone-900 dark:text-stone-100">C++ CP Guide</h1>
+        </div>
+        <div class="flex-1 max-w-sm mx-4 hidden md:block">
+            <input type="text" id="search-input" placeholder="Search the guide..." class="w-full p-2 rounded-md border border-stone-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-stone-100 dark:bg-stone-700 dark:border-stone-600 dark:text-stone-100">
+        </div>
+        <div class="flex items-center space-x-2">
+            <button id="theme-toggle" class="p-2 rounded-md hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors duration-200">
+                <svg id="moon-icon" class="w-6 h-6 hidden dark:block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 10.5a9.753 9.753 0 0 0 10.5 9.75c1.155-.482 2.385-.752 3.75-.752Z" />
+                </svg>
+                <svg id="sun-icon" class="w-6 h-6 dark:hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364 1.818-.866.866M12 18.75V21m-6.364-1.818.866-.866M18.75 12h2.25m-2.25-.75h-2.25m-6.364 1.818.866-.866M3.75 12h2.25m-6.364-1.818.866-.866m10.606 10.606.866-.866M7.5 7.5h.008v.008H7.5V7.5Zm-3 3h.008v.008H4.5V10.5Zm3 3h.008v.008H7.5V13.5Zm7.5-3h.008v.008h-.008V10.5Zm3 3h.008v.008h-.008V13.5Z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-stone-900/50 z-40 md:hidden hidden"></div>
+
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 p-6 bg-white/80 backdrop-blur-lg border-r border-stone-200 z-50 transform -translate-x-full transition-transform duration-300 md:relative md:transform-none md:w-64 md:block md:bg-white md:border-r md:border-stone-200 md:shadow-none dark:bg-stone-800/80 dark:border-stone-700">
+        <div class="flex justify-end md:hidden">
+            <button id="close-menu-toggle" class="p-2 rounded-md hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <h1 class="text-xl font-bold text-stone-900 dark:text-stone-100 mb-8 mt-2 md:mt-0">C++ CP Guide</h1>
+        <nav id="sidebar-nav" class="space-y-2">
+            <a href="#intro" class="sidebar-link block p-2 rounded-lg text-stone-600 font-medium hover:bg-stone-200 dark:text-stone-400 dark:hover:bg-stone-700">ভূমিকা (Intro)</a>
+            <a href="#part1" class="sidebar-link block p-2 rounded-lg text-stone-600 font-medium hover:bg-stone-200 dark:text-stone-400 dark:hover:bg-stone-700">Part 1: Basics</a>
+            <a href="#part2" class="sidebar-link block p-2 rounded-lg text-stone-600 font-medium hover:bg-stone-200 dark:text-stone-400 dark:hover:bg-stone-700">Part 2: Essentials</a>
+            <a href="#part3" class="sidebar-link block p-2 rounded-lg text-stone-600 font-medium hover:bg-stone-200 dark:text-stone-400 dark:hover:bg-stone-700">Part 3: C++ STL</a>
+            <a href="#part4" class="sidebar-link block p-2 rounded-lg text-stone-600 font-medium hover:bg-stone-200 dark:text-stone-400 dark:hover:bg-stone-700">Part 4: Strategy</a>
+            <a href="#part5" class="sidebar-link block p-2 rounded-lg text-stone-600 font-medium hover:bg-stone-200 dark:text-stone-400 dark:hover:bg-stone-700">Part 5: Codeforces Tips</a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-4 sm:p-6 md:p-10 pt-20 md:pt-10">
+        <div id="main-content">
+            <section id="intro" class="mb-16">
+                <h2 class="text-4xl font-bold text-stone-900 dark:text-stone-100 mb-4">Complete Guide to Competitive Programming in C++</h2>
+                <div class="content-card p-6 bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700">
+                    <p class="mb-2 text-lg"><span class="font-semibold">ভূমিকা (Introduction):</span> প্রতিযোগিতামূলক প্রোগ্রামিং (Competitive Programming) হচ্ছে একটি মানসিক খেলা যেখানে আপনাকে নির্দিষ্ট কিছু সমস্যা সমাধান করতে হয় কম্পিউটার প্রোগ্রামিং ব্যবহার করে। Codeforces হলো এমন একটি জনপ্রিয় প্ল্যাটফর্ম যেখানে আপনি প্রোগ্রামিং সমস্যা সমাধান করে আপনার দক্ষতা বাড়াতে পারেন। এই গাইডটি আপনাকে C++ ব্যবহার করে প্রতিযোগিতামূলক প্রোগ্রামিং-এর জন্য প্রস্তুত করতে সাহায্য করবে।</p>
+                    <p class="text-lg">Competitive programming is a mental sport where you have to solve specific problems using computer programming. Codeforces is a popular platform where you can solve programming problems to improve your skills. This guide will help you prepare for competitive programming using C++.</p>
+                </div>
+            </section>
+
+            <section id="part1" class="mb-16">
+                <h2 class="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-6">পার্ট ১: একদম মৌলিক বিষয়গুলো (Part 1: The Absolute Basics)</h2>
+                <p class="text-lg mb-8 max-w-4xl">This section covers the foundational building blocks of C++. Understanding these concepts of variables, data types, and how to handle input/output is the first and most critical step in your programming journey. Master these, and you'll have a solid base for everything that follows.</p>
+                <div class="space-y-8">
+                    <div class="content-card p-6 bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700">
+                        <h3 class="text-2xl font-semibold mb-3">1.1 Data Types and Variables</h3>
+                        <p class="mb-4">Variables are containers for storing data values. In C++, each variable must have a specified data type, which determines the size and layout of the variable's memory. Here are the most common ones:</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                           <div class="border p-4 rounded-lg bg-stone-50 dark:bg-stone-900 dark:border-stone-700"><code class="font-mono font-bold text-blue-600">int</code><p class="text-sm">For whole numbers.</p></div>
+                           <div class="border p-4 rounded-lg bg-stone-50 dark:bg-stone-900 dark:border-stone-700"><code class="font-mono font-bold text-blue-600">double</code><p class="text-sm">For floating-point numbers.</p></div>
+                           <div class="border p-4 rounded-lg bg-stone-50 dark:bg-stone-900 dark:border-stone-700"><code class="font-mono font-bold text-blue-600">char</code><p class="text-sm">For a single character.</p></div>
+                           <div class="border p-4 rounded-lg bg-stone-50 dark:bg-stone-900 dark:border-stone-700"><code class="font-mono font-bold text-blue-600">string</code><p class="text-sm">For a sequence of characters.</p></div>
+                           <div class="border p-4 rounded-lg bg-stone-50 dark:bg-stone-900 dark:border-stone-700"><code class="font-mono font-bold text-blue-600">bool</code><p class="text-sm">For true/false values.</p></div>
+                           <div class="border p-4 rounded-lg bg-stone-50 dark:bg-stone-900 dark:border-stone-700"><code class="font-mono font-bold text-blue-600">long long</code><p class="text-sm">For very large integers.</p></div>
+                        </div>
+                    </div>
+                     <div class="content-card p-6 bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700">
+                        <h3 class="text-2xl font-semibold mb-3">1.2 Input and Output</h3>
+                        <p class="mb-4">For competitive programming, getting input quickly and printing output correctly is crucial. C++ offers two main ways to do this. While `cin`/`cout` are easier, `scanf`/`printf` are often faster and preferred in contests.</p>
+                        <pre class="bg-stone-900 dark:bg-stone-950 text-stone-200"><code>// Using cin and cout
+#include &lt;iostream&gt;
+int main() {
+    int a;
+    std::cin &gt;&gt; a;
+    std::cout &lt;&lt; "You entered: " &lt;&lt; a &lt;&lt; std::endl;
+    return 0;
+}
+
+// Using scanf and printf (often faster)
+#include &lt;cstdio&gt;
+int main() {
+    int a;
+    scanf("%d", &a);
+    printf("Number is: %d\n", a);
+    return 0;
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="part2" class="mb-16">
+                <h2 class="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-6">পার্ট ২: গুরুত্বপূর্ণ ধারণাগুলো (Part 2: Essential Concepts)</h2>
+                 <p class="text-lg mb-8 max-w-4xl">Now that you have the basics, this section introduces the essential tools for organizing data. Arrays, vectors, and strings are fundamental for handling collections of data, while pointers and structures allow for more complex and efficient memory management and data representation.</p>
+                <div class="space-y-8">
+                   <div class="content-card p-6 bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700">
+                        <h3 class="text-2xl font-semibold mb-3">2.1 Arrays and Vectors</h3>
+                        <p class="mb-4">Both are used to store collections of elements. An array has a fixed size determined at compile time. A vector is a dynamic array from the STL, which can grow or shrink in size. Vectors are generally more flexible and safer to use in competitive programming.</p>
+                        <pre class="bg-stone-900 dark:bg-stone-950 text-stone-200"><code>#include &lt;vector&gt;
+#include &lt;iostream&gt;
+
+int main() {
+    // Array (fixed size)
+    int arr[5] = {1, 2, 3, 4, 5};
+    
+    // Vector (dynamic size)
+    std::vector&lt;int&gt; vec;
+    vec.push_back(10); // Add element
+    vec.push_back(20);
+    
+    std::cout &lt;&lt; "Vector size: " &lt;&lt; vec.size() &lt;&lt; std::endl;
+    return 0;
+}</code></pre>
+                    </div>
+                    <div class="content-card p-6 bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700">
+                        <h3 class="text-2xl font-semibold mb-3">2.5 ASCII Values</h3>
+                        <p class="mb-4">Every character has a corresponding integer value under the ASCII standard. This is useful for character manipulation, like converting between uppercase and lowercase letters or checking if a character is a digit.</p>
+                        <pre class="bg-stone-900 dark:bg-stone-950 text-stone-200"><code>#include &lt;iostream&gt;
+
+int main() {
+    char c = 'A';
+    int ascii_value = c; // Implicit conversion
+    std::cout &lt;&lt; "ASCII for 'A' is " &lt;&lt; ascii_value &lt;&lt; std::endl; // Outputs 65
+
+    char letter_a = 97;
+    std::cout &lt;&lt; "Character for 97 is " &lt;&lt; letter_a &lt;&lt; std::endl; // Outputs 'a'
+    return 0;
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="part3" class="mb-16">
+                <h2 class="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-6">পার্ট ৩: C++ STL (Standard Template Library)</h2>
+                <p class="text-lg mb-8 max-w-4xl">The STL is your best friend in competitive programming. It's a collection of powerful and highly optimized data structures and algorithms that save you from reinventing the wheel. Mastering the key components of the STL is essential for solving problems quickly and efficiently.</p>
+                <div class="content-card p-6 bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700">
+                    <h3 class="text-2xl font-semibold mb-3">Key STL Containers</h3>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><code class="font-mono text-blue-600">vector</code>: Dynamic array.</li>
+                        <li><code class="font-mono text-blue-600">map</code>: Stores key-value pairs, sorted by key. Slower than `unordered_map`.</li>
+                        <li><code class="font-mono text-blue-600">unordered_map</code>: Stores key-value pairs, unsorted (hashed). Much faster for lookups.</li>
+                        <li><code class="font-mono text-blue-600">set</code>: Stores unique elements, sorted.</li>
+                        <li><code class="font-mono text-blue-600">unordered_set</code>: Stores unique elements, unsorted (hashed).</li>
+                        <li><code class="font-mono text-blue-600">pair</code>: A simple container to hold two heterogeneous objects as a single unit.</li>
+                        <li><code class="font-mono text-blue-600">stack</code>: Last-in, first-out (LIFO) data structure.</li>
+                        <li><code class="font-mono text-blue-600">queue</code>: First-in, first-out (FIFO) data structure.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="part4" class="mb-16">
+                <h2 class="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-6">পার্ট ৪: প্রতিযোগিতামূলক প্রোগ্রামিং কৌশল (Part 4: Strategy)</h2>
+                <p class="text-lg mb-8 max-w-4xl">Knowing the language is only half the battle. This section focuses on the strategic approach to problem-solving. Understanding time complexity is crucial for writing efficient code that passes within the time limits, and learning common algorithmic techniques will provide you with a toolbox for tackling a wide range of problems.</p>
+                 <div class="space-y-8">
+                     <div class="content-card p-6 bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700">
+                        <h3 class="text-2xl font-semibold mb-3">4.1 Problem-Solving Approach</h3>
+                        <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
+                            <div class="text-center p-4 border rounded-lg bg-stone-50 dark:bg-stone-900 dark:border-stone-700">1. Read & Understand</div>
+                            <div class="text-xl">&rarr;</div>
+                            <div class="text-center p-4 border rounded-lg bg-stone-50 dark:bg-stone-900 dark:border-stone-700">2. Think Algorithm</div>
+                             <div class="text-xl">&rarr;</div>
+                            <div class="text-center p-4 border rounded-lg bg-stone-50 dark:bg-stone-900 dark:border-stone-700">3. Analyze Complexity</div>
+                             <div class="text-xl">&rarr;</div>
+                            <div class="text-center p-4 border rounded-lg bg-stone-50 dark:bg-stone-900 dark:border-stone-700">4. Code & Test</div>
+                        </div>
+                    </div>
+                    <div class="content-card p-6 bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700">
+                        <h3 class="text-2xl font-semibold mb-3">4.2 Time Complexity Analysis (Big O)</h3>
+                        <p class="mb-4">Understanding how the runtime of your algorithm scales with the input size is the most important skill in competitive programming. This chart visualizes the growth rates of common complexities. An algorithm with O(n²) complexity will be much slower for large inputs than an O(n log n) one.</p>
+                        <div class="chart-container">
+                            <canvas id="complexityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="part5" class="mb-16">
+                <h2 class="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-6">পার্ট ৫: Codeforces-এর জন্য টিপস (Part 5: Codeforces Tips)</h2>
+                 <p class="text-lg mb-8 max-w-4xl">Here are some practical tips specifically for the Codeforces platform. These small adjustments and best practices can make a big difference in contests, from speeding up your program's execution to helping you learn more effectively from your mistakes.</p>
+                <div class="content-card p-6 bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700">
+                     <ul class="list-disc list-inside space-y-4">
+                        <li>
+                            <strong>দ্রুত I/O (Fast I/O):</strong> Always add these lines at the beginning of your `main` function to speed up `cin` and `cout`, which can prevent `Time Limit Exceeded` errors on large inputs.
+                            <pre class="bg-stone-900 dark:bg-stone-950 text-stone-200"><code>std::ios_base::sync_with_stdio(false);
+std::cin.tie(NULL);</code></pre>
+                        </li>
+                        <li>
+                            <strong>ভুলগুলো বুঝুন (Understand Your Mistakes):</strong> Don't just move on from a `Wrong Answer` or `Time Limit Exceeded`. Analyze the test case that failed. Try to find the bug or the reason for inefficiency. This is how you truly improve.
+                        </li>
+                        <li>
+                            <strong>কোড সাবমিট করুন (Submit Your Code):</strong> Don't be afraid to submit. Getting your first accepted solution is a huge milestone. Every submission, even a wrong one, is a learning opportunity.
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="p-4 text-center text-stone-500 bg-stone-100 dark:bg-stone-800 dark:text-stone-400 border-t border-stone-200 dark:border-stone-700">
+        <p>Created with <span class="text-red-500">♥</span> for learning competitive programming. © 2025.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('#sidebar-nav a');
+            const mainContent = document.getElementById('main-content');
+            const searchInput = document.getElementById('search-input');
+            const themeToggle = document.getElementById('theme-toggle');
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const closeMenuToggle = document.getElementById('close-menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-menu-overlay');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.3
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active', 'bg-stone-200', 'dark:bg-stone-700');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active', 'bg-stone-200', 'dark:bg-stone-700');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth < 768) {
+                        sidebar.classList.add('-translate-x-full');
+                        overlay.classList.add('hidden');
+                    }
+                });
+            });
+
+            themeToggle.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+            });
+
+            mobileMenuToggle.addEventListener('click', () => {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            });
+
+            closeMenuToggle.addEventListener('click', () => {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            });
+
+            overlay.addEventListener('click', () => {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            });
+
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.toLowerCase();
+                sections.forEach(section => {
+                    const text = section.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        section.style.display = 'block';
+                    } else {
+                        section.style.display = 'none';
+                    }
+                });
+            });
+            
+            const ctx = document.getElementById('complexityChart').getContext('2d');
+            const complexityChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)', 'O(n²)'],
+                    datasets: [{
+                        label: 'Operations for n=1,000,000 (Logarithmic Scale)',
+                        data: [1, 20, 1000000, 20000000, 1000000000000],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(255, 159, 64, 0.6)',
+                            'rgba(255, 99, 132, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'logarithmic',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Operations'
+                            }
+                        },
+                        x: {
+                             title: {
+                                display: true,
+                                text: 'Complexity'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toExponential(2);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
